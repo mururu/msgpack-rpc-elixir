@@ -1,0 +1,2 @@
+defmodule MsgpackRpcElixir do
+end
