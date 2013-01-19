@@ -1,0 +1,2 @@
+[ "exmsgpack": {:git,"https://github.com/yrashk/exmsgpack.git","a84f09e5169a612762e6e928eeee2f53b7750159",[]},
+  "ranch": {:git,"https://github.com/extend/ranch.git","d635aece25ae0d6489d2c3c074cfb6363d92fc61",[]} ]
