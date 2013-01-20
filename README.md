@@ -1,3 +1,3 @@
-# MsgpackRpcElixir
+# MessagePack-RPC Elixir
 
-** TODO: Add description **
+developing
