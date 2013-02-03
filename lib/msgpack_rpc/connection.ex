@@ -1,5 +1,5 @@
 defmodule MessagePackRPC.Connection do
-  @behaviour :gen_server
+  use GenServer.Behaviour
   use MessagePackRPC.Utils
 
   defrecord State, connection: nil, transport: nil, counter: 0, session: [], buffer: ""
