@@ -66,7 +66,7 @@ defmodule MessagePackRPC.Protocol do
 
   defp parse_request(state = State[buffer: buffer, module: module]) do
     try do
-      case MsgPack.unpack(buffer) do
+      case MessagePack.unpack(buffer, stream: true) do
         {[@mp_type_request, call_id, m, args], remain} ->
           spawn_request_handler(call_id, module, m, args)
           parse_request(state.update(buffer: remain))
@@ -79,7 +79,7 @@ defmodule MessagePackRPC.Protocol do
           terminate(state)
       end
     rescue
-      MsgPack.IncompletePacket ->
+      MessagePack.IncompleteDataError ->
         wait_request(state)
       other ->
         IO.puts other.message
@@ -100,10 +100,10 @@ defmodule MessagePackRPC.Protocol do
       prefix = [@mp_type_response, call_id]
       try do
         result = apply(module, method, args)
-        pid <- { :reply, ((prefix ++ [nil, result]) |> MsgPack.pack |> MsgPack.packed_to_binary) }
+        pid <- { :reply, ((prefix ++ [nil, result]) |> MessagePack.pack) }
       rescue
         x in [UndefinedFunctionError] ->
-          pid <- { :reply, ((prefix ++ ["undef", nil]) |> MsgPack.pack |> MsgPack.packed_to_binary) }
+          pid <- { :reply, ((prefix ++ ["undef", nil]) |> MessagePack.pack ) }
       end
     end
   end

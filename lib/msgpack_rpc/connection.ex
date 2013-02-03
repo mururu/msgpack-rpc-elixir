@@ -24,7 +24,7 @@ defmodule MessagePackRPC.Connection do
 
   def handle_call({:call_async, method, args}, _from, state = State[connection: socket, transport: transport, session: sessions, counter: count]) do
     call_id = count
-    binary = [@mp_type_request, call_id, method, args] |> MsgPack.pack |> MsgPack.packed_to_binary
+    binary = [@mp_type_request, call_id, method, args] |> MessagePack.pack
     :ok = transport.send(socket, binary)
     :ok = transport.setopts(socket, [{:active, :once}])
     { :reply, { :ok, call_id }, state.update(counter: count + 1, session: [{call_id, :none}|sessions]) }
@@ -52,7 +52,7 @@ defmodule MessagePackRPC.Connection do
 
 
   def handle_cast({:notify, method, args}, state = State[connection: socket, transport: transport]) do
-    binary = [@mp_type_notify, method, args] |> MsgPack.pack |> MsgPack.packed_to_binary
+    binary = [@mp_type_notify, method, args] |> MessagePack.pack
     :ok = transport.send(socket, binary)
     { :noreply, state }
   end
@@ -67,7 +67,7 @@ defmodule MessagePackRPC.Connection do
       new_buffer = << buf :: binary, bin :: binary >>
       :ok = transport.setopts(socket, [{:active, :once}])
 
-      case MsgPack.unpack(new_buffer) do
+      case MessagePack.unpack(new_buffer, stream: true) do
         { :error, re } ->
           { :noreply, state.update(buffer: new_buffer) }
         { term, remain } ->
