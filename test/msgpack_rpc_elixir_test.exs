@@ -8,6 +8,7 @@ end
 defmodule MsgpackRPCTest do
   use ExUnit.Case
 
+  # callbacks
   def setup_all do
     :application.start(:ranch)
     MessagePackRPC.Server.start(name: :my_server, transport: :tcp, handler: MyHandler, options: [port: 9199])
@@ -18,42 +19,41 @@ defmodule MsgpackRPCTest do
     :application.stop(:ranch)
   end
 
-  test "call" do
+  def setup do
     {:ok, pid} = MessagePackRPC.Client.connect(transport: :tcp, address: :localhost, port: 9199)
+    Process.put(:client_pid, pid)
+  end
 
-    assert MessagePackRPC.Client.call(pid: pid, func: :hello, args: []) == { :ok, "hello" }
-    assert MessagePackRPC.Client.call(pid: pid, func: :sum, args: [1,2]) == { :ok, 3 }
+  def teardown do
+    :ok = MessagePackRPC.Client.close(client_pid)
+    Process.delete(:client_pid)
+  end
 
-    :ok = MessagePackRPC.Client.close(pid)
+  # util
+  def client_pid do
+    Process.get(:client_pid)
+  end
+
+  test "call" do
+    assert MessagePackRPC.Client.call(pid: client_pid, func: :hello, args: []) == { :ok, "hello" }
+    assert MessagePackRPC.Client.call(pid: client_pid, func: :sum, args: [1,2]) == { :ok, 3 }
   end
 
   test "notify" do
-    {:ok, pid} = MessagePackRPC.Client.connect(transport: :tcp, address: :localhost, port: 9199)
-
-    assert MessagePackRPC.Client.notify(pid: pid, func: :hello, args: []) == :ok
-    assert MessagePackRPC.Client.notify(pid: pid, func: :sum, args: [1,2]) == :ok
-
-    :ok = MessagePackRPC.Client.close(pid)
+    assert MessagePackRPC.Client.notify(pid: client_pid, func: :hello, args: []) == :ok
+    assert MessagePackRPC.Client.notify(pid: client_pid, func: :sum, args: [1,2]) == :ok
   end
 
   test "call_async" do
-    {:ok, pid} = MessagePackRPC.Client.connect(transport: :tcp, address: :localhost, port: 9199)
+    {:ok, req1} = MessagePackRPC.Client.call_async(pid: client_pid, func: :hello, args: [])
+    assert MessagePackRPC.Client.join(pid: client_pid, req: req1) == { :ok, "hello" }
 
-    {:ok, req1} = MessagePackRPC.Client.call_async(pid: pid, func: :hello, args: [])
-    assert MessagePackRPC.Client.join(pid: pid, req: req1) == { :ok, "hello" }
-
-    {:ok, req2} = MessagePackRPC.Client.call_async(pid: pid, func: :sum, args: [1,2])
-    assert MessagePackRPC.Client.join(pid: pid, req: req2) == { :ok, 3 }
-
-    :ok = MessagePackRPC.Client.close(pid)
+    {:ok, req2} = MessagePackRPC.Client.call_async(pid: client_pid, func: :sum, args: [1,2])
+    assert MessagePackRPC.Client.join(pid: client_pid, req: req2) == { :ok, 3 }
   end
 
   test "undef" do
-    {:ok, pid} = MessagePackRPC.Client.connect(transport: :tcp, address: :localhost, port: 9199)
-
-    assert MessagePackRPC.Client.call(pid: pid, func: :hello, args: [1]) == { :error, :undef }
-    assert MessagePackRPC.Client.call(pid: pid, func: :happy, args: []) == { :error, :undef }
-
-    :ok = MessagePackRPC.Client.close(pid)
+    assert MessagePackRPC.Client.call(pid: client_pid, func: :hello, args: [1]) == { :error, :undef }
+    assert MessagePackRPC.Client.call(pid: client_pid, func: :happy, args: []) == { :error, :undef }
   end
 end
