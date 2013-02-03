@@ -98,8 +98,13 @@ defmodule MessagePackRPC.Protocol do
     spawn fn->
       method = binary_to_existing_atom(m, :latin1)
       prefix = [@mp_type_response, call_id]
-      result = apply(module, method, args)
-      pid <- { :reply, ((prefix ++ [nil, result]) |> MsgPack.pack |> MsgPack.packed_to_binary) }
+      try do
+        result = apply(module, method, args)
+        pid <- { :reply, ((prefix ++ [nil, result]) |> MsgPack.pack |> MsgPack.packed_to_binary) }
+      rescue
+        x in [UndefinedFunctionError] ->
+          pid <- { :reply, ((prefix ++ ["undef", nil]) |> MsgPack.pack |> MsgPack.packed_to_binary) }
+      end
     end
   end
 end

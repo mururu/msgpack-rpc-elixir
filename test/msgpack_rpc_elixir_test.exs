@@ -47,4 +47,13 @@ defmodule MsgpackRPCTest do
 
     :ok = MessagePackRPC.Client.close(pid)
   end
+
+  test "undef" do
+    {:ok, pid} = MessagePackRPC.Client.connect(transport: :tcp, address: :localhost, port: 9199)
+
+    assert MessagePackRPC.Client.call(pid: pid, func: :hello, args: [1]) == { :error, :undef }
+    assert MessagePackRPC.Client.call(pid: pid, func: :happy, args: []) == { :error, :undef }
+
+    :ok = MessagePackRPC.Client.close(pid)
+  end
 end
