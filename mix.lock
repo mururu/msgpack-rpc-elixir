@@ -1,2 +1,2 @@
-[ "message_pack": {:git,"https://github.com/mururu/msgpack-elixir.git","322e42d6048320f0ddf05769db3e16ede15d47e4",[]},
+[ "message_pack": {:git,"https://github.com/mururu/msgpack-elixir.git","844c7ed65d1b634b2468b6c5d29c52c2bf84eaea",[]},
   "ranch": {:git,"https://github.com/extend/ranch.git","d635aece25ae0d6489d2c3c074cfb6363d92fc61",[]} ]

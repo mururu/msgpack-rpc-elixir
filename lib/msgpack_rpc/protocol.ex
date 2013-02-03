@@ -66,7 +66,7 @@ defmodule MessagePackRPC.Protocol do
 
   defp parse_request(state = State[buffer: buffer, module: module]) do
     try do
-      case MessagePack.unpack(buffer, stream: true) do
+      case MessagePack.unpack_stream(buffer) do
         {[@mp_type_request, call_id, m, args], remain} ->
           spawn_request_handler(call_id, module, m, args)
           parse_request(state.update(buffer: remain))

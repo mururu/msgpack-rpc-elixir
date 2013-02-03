@@ -67,7 +67,7 @@ defmodule MessagePackRPC.Connection do
       new_buffer = << buf :: binary, bin :: binary >>
       :ok = transport.setopts(socket, [{:active, :once}])
 
-      case MessagePack.unpack(new_buffer, stream: true) do
+      case MessagePack.unpack_stream(new_buffer) do
         { :error, re } ->
           { :noreply, state.update(buffer: new_buffer) }
         { term, remain } ->
