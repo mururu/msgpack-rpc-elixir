@@ -9,24 +9,28 @@ defmodule MsgpackRPCTest do
   use ExUnit.Case
 
   # callbacks
-  def setup_all do
+  setup_all do
     :application.start(:ranch)
     MessagePackRPC.Server.start(name: :my_server, transport: :tcp, handler: MyHandler, options: [port: 9199])
+    :ok
   end
 
-  def teardown_all do
+  teardown_all do
     MessagePackRPC.Server.stop(name: :my_server)
     :application.stop(:ranch)
+    :ok
   end
 
-  def setup do
+  setup do
     {:ok, pid} = MessagePackRPC.Client.connect(transport: :tcp, address: :localhost, port: 9199)
     Process.put(:client_pid, pid)
+    :ok
   end
 
-  def teardown do
+  teardown do
     :ok = MessagePackRPC.Client.close(client_pid)
     Process.delete(:client_pid)
+    :ok
   end
 
   # util
